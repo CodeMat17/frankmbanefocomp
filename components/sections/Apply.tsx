@@ -197,6 +197,8 @@ export default function Apply() {
       setCaptchaToken("");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setStatus("error");
+    } finally {
+      setStatus("idle");
     }
   };
 

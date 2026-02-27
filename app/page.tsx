@@ -24,7 +24,7 @@ export default function Home() {
         <Timeline />
         <Prizes />
         <Apply />
-        <Submit />
+        {/* <Submit /> */}
         <Sponsors />
       </main>
       <Footer />

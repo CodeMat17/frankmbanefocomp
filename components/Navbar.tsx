@@ -35,10 +35,10 @@ export default function Navbar() {
     <>
       <motion.header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-500 backdrop-blur-sm",
           scrolled
             ? "glass shadow-sm"
-            : "bg-transparent"
+            : " border-white/5"
         )}
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -64,10 +64,10 @@ export default function Navbar() {
                 <Leaf className="w-4 h-4 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <div className="text-xs font-bold leading-none text-foreground">
+                <div className="text-sm font-bold leading-none text-white dark:text-white/70">
                   TROPICAL FUTURES
                 </div>
-                <div className="text-xs text-muted-foreground leading-none mt-0.5">
+                <div className="text-xs text-white/500 leading-none mt-0.5">
                   2026
                 </div>
               </div>
@@ -93,14 +93,14 @@ export default function Navbar() {
             {/* Actions */}
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Button
+              {/* <Button
                 size="sm"
                 variant="outline"
                 className="hidden md:flex"
                 onClick={() => handleNavClick("#submit")}
               >
                 Submit Work
-              </Button>
+              </Button> */}
               <Button
                 size="sm"
                 className="hidden md:flex"
@@ -158,9 +158,9 @@ export default function Navbar() {
                   </motion.a>
                 ))}
                 <div className="pt-4 flex flex-col gap-2 border-t border-border">
-                  <Button variant="outline" onClick={() => handleNavClick("#submit")}>
+                  {/* <Button variant="outline" onClick={() => handleNavClick("#submit")}>
                     Submit Work
-                  </Button>
+                  </Button> */}
                   <Button onClick={() => handleNavClick("#apply")}>
                     Apply Now
                   </Button>

@@ -18,6 +18,7 @@ import {
   MapPin,
   AlertCircle,
 } from "lucide-react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 interface TeamMember {
   id: string;
@@ -84,6 +85,9 @@ export default function Apply() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
+  const captchaRef = useRef<HCaptcha>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+
   const [form, setForm] = useState<FormData>(initialForm);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -112,291 +116,326 @@ export default function Apply() {
     );
   };
 
+  const onHCaptchaChange = (token: string) => setCaptchaToken(token);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.agreeEligibility || !form.agreeRequirements || !form.agreeTerms) {
       setErrorMsg("Please confirm all declarations before submitting.");
       return;
     }
+    if (!captchaToken) {
+      setErrorMsg("Please complete the CAPTCHA verification.");
+      return;
+    }
     setStatus("loading");
     setErrorMsg("");
     try {
-      const res = await fetch("/api/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Submission failed.");
-
-      const referenceId = data.referenceId || "FM2026-XXXX";
-      setRefId(referenceId);
-
-      // Notify via Web3Forms from the browser (free tier requires client-side calls)
       const w3fKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
-      if (!w3fKey) {
-        console.warn("[Web3Forms] NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY is not set — notification skipped.");
-      } else {
-        const teamMembersList =
-          form.teamMembers.length > 0
-            ? form.teamMembers
-                .map((m) => `${m.name} <${m.email}> — ${m.university}`)
-                .join(" | ")
-            : "Individual application";
-        const timestamp =
-          new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
-        const fd = new FormData();
-        fd.append("access_key", w3fKey);
-        fd.append("subject", `[TF2026] New Application — ${form.leadName} (${referenceId})`);
-        fd.append("from_name", "Tropical Futures 2026");
-        fd.append("replyto", form.leadEmail);
-        fd.append("Reference ID", referenceId);
-        fd.append("Received", timestamp);
-        fd.append("Application Type", form.applicationType);
-        fd.append("Lead Name", form.leadName);
-        fd.append("Lead Email", form.leadEmail);
-        fd.append("Phone", form.leadPhone || "—");
-        fd.append("University", form.university);
-        fd.append("Country", form.country);
-        fd.append("Program", form.program);
-        fd.append("Year of Study", form.yearOfStudy);
-        fd.append("Team Name", form.teamName || "—");
-        fd.append("Team Members", teamMembersList);
-        fd.append("Site Location", form.siteLocation);
-        fd.append("Concept Brief", form.conceptBrief || "—");
-        fd.append("Heard From", form.heardFrom || "—");
-        fetch("https://api.web3forms.com/submit", { method: "POST", body: fd })
-          .catch((err) => console.warn("[Web3Forms]", err));
-      }
+      if (!w3fKey) console.warn("[Web3Forms] NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY is not set.");
 
+      // Generate reference ID locally
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let referenceId = "FM2026-";
+      for (let i = 0; i < 8; i++) referenceId += chars[Math.floor(Math.random() * chars.length)];
+
+      const teamMembersList =
+        form.teamMembers.length > 0
+          ? form.teamMembers.map((m) => `${m.name} <${m.email}> — ${m.university}`).join(" | ")
+          : "Individual application";
+      const timestamp = new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
+
+      // Build FormData manually from React state (inputs have no name attrs)
+      const fd = new FormData();
+      fd.append("access_key", w3fKey ?? "");
+      fd.append("subject", `[TF2026] New Application — ${form.leadName} (${referenceId})`);
+      fd.append("from_name", "Tropical Futures 2026");
+      fd.append("replyto", form.leadEmail);
+      fd.append("h-captcha-response", captchaToken);
+      fd.append("Reference ID", referenceId);
+      fd.append("Received", timestamp);
+      fd.append("Application Type", form.applicationType);
+      fd.append("Lead Name", form.leadName);
+      fd.append("Lead Email", form.leadEmail);
+      fd.append("Phone", form.leadPhone || "—");
+      fd.append("University", form.university);
+      fd.append("Country", form.country);
+      fd.append("Program", form.program);
+      fd.append("Year of Study", form.yearOfStudy);
+      fd.append("Team Name", form.teamName || "—");
+      fd.append("Team Members", teamMembersList);
+      fd.append("Site Location", form.siteLocation);
+      fd.append("Concept Brief", form.conceptBrief || "—");
+      fd.append("Heard From", form.heardFrom || "—");
+
+      const res = await fetch("https://api.web3forms.com/submit", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || "Submission failed.");
+
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken("");
+      setRefId(referenceId);
       setStatus("success");
     } catch (err) {
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken("");
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
       setStatus("error");
     }
   };
 
   return (
-    <section id="apply" className="py-24 md:py-32 bg-muted/40">
-      <div className="container-max section-padding">
+    <section id='apply' className='py-24 md:py-32 bg-muted/40'>
+      <div className='container-max section-padding'>
         <motion.div
           ref={ref}
-          className="grid lg:grid-cols-5 gap-12 items-start"
-          initial="hidden"
+          className='grid lg:grid-cols-5 gap-12 items-start'
+          initial='hidden'
           animate={isInView ? "visible" : "hidden"}
-          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-        >
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
           {/* Left sidebar info */}
-          <motion.div className="lg:col-span-2 space-y-6" variants={fadeUp}>
+          <motion.div className='lg:col-span-2 space-y-6' variants={fadeUp}>
             <div>
-              <span className="text-sm font-bold uppercase tracking-widest text-primary block mb-3">
+              <span className='text-sm font-bold uppercase tracking-widest text-primary block mb-3'>
                 Step 1 of 2
               </span>
-              <h2 className="text-4xl sm:text-5xl font-black text-foreground mb-4 leading-tight">
+              <h2 className='text-4xl sm:text-5xl font-black text-foreground mb-4 leading-tight'>
                 Apply to Compete
               </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Register your interest. Selected applicants will receive a unique submission code
-                to upload their design work before the July 31 deadline.
+              <p className='text-muted-foreground leading-relaxed'>
+                Register your interest. Selected applicants will receive a
+                unique submission code to upload their design work before the
+                July 31 deadline.
               </p>
             </div>
 
             {/* Registration fees */}
-            <div className="space-y-3">
-              <p className="text-sm font-bold text-foreground">Registration Fees</p>
-              <div className="p-4 rounded-xl border border-border bg-card">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-foreground">Early Bird</span>
-                  <span className="font-black text-primary">₦10,000</span>
+            <div className='space-y-3'>
+              <p className='text-sm font-bold text-foreground'>
+                Registration Fees
+              </p>
+              <div className='p-4 rounded-xl border border-border bg-card'>
+                <div className='flex justify-between items-center mb-2'>
+                  <span className='text-sm font-semibold text-foreground'>
+                    Early Bird
+                  </span>
+                  <span className='font-black text-primary'>₦10,000</span>
                 </div>
-                <div className="text-xs text-muted-foreground">Until April 15, 2026</div>
+                <div className='text-xs text-muted-foreground'>
+                  Until April 15, 2026
+                </div>
               </div>
-              <div className="p-4 rounded-xl border border-border bg-card">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-semibold text-foreground">Standard</span>
-                  <span className="font-black text-foreground">₦25,000</span>
+              <div className='p-4 rounded-xl border border-border bg-card'>
+                <div className='flex justify-between items-center mb-2'>
+                  <span className='text-sm font-semibold text-foreground'>
+                    Standard
+                  </span>
+                  <span className='font-black text-foreground'>₦25,000</span>
                 </div>
-                <div className="text-xs text-muted-foreground">April 16 – May 15, 2026</div>
+                <div className='text-xs text-muted-foreground'>
+                  April 16 – May 15, 2026
+                </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm text-muted-foreground">
-              <strong className="text-foreground block mb-1">After registration:</strong>
-              The organizing team will review your application. Eligible candidates will be contacted
-              with a secure submission code via email before the submission window opens.
+            <div className='p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm text-muted-foreground'>
+              <strong className='text-foreground block mb-1'>
+                After registration:
+              </strong>
+              The organizing team will review your application. Eligible
+              candidates will be contacted with a secure submission code via
+              email before the submission window opens.
             </div>
           </motion.div>
 
           {/* Form */}
-          <motion.div className="lg:col-span-3" variants={fadeUp}>
-            <AnimatePresence mode="wait">
+          <motion.div className='lg:col-span-3' variants={fadeUp}>
+            <AnimatePresence mode='wait'>
               {status === "success" ? (
                 <motion.div
-                  className="flex flex-col items-center justify-center text-center py-16 px-8 rounded-2xl border border-primary/30 bg-primary/5"
+                  className='flex flex-col items-center justify-center text-center py-16 px-8 rounded-2xl border border-primary/30 bg-primary/5'
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ type: "spring" }}
-                  key="success"
-                >
+                  key='success'>
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
-                  >
-                    <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
+                    transition={{ type: "spring", stiffness: 300, delay: 0.2 }}>
+                    <CheckCircle2 className='w-16 h-16 text-primary mx-auto mb-4' />
                   </motion.div>
-                  <h3 className="text-2xl font-black text-foreground mb-2">Application Submitted!</h3>
-                  <p className="text-muted-foreground mb-4">
+                  <h3 className='text-2xl font-black text-foreground mb-2'>
+                    Application Submitted!
+                  </h3>
+                  <p className='text-muted-foreground mb-4'>
                     Your reference ID is{" "}
-                    <strong className="text-foreground font-mono">{refId}</strong>.
-                    Check your email for confirmation.
+                    <strong className='text-foreground font-mono'>
+                      {refId}
+                    </strong>
+                    . Check your email for confirmation.
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    The organizing team will review your eligibility and send your submission
-                    code before the submission window opens.
+                  <p className='text-sm text-muted-foreground'>
+                    The organizing team will review your eligibility and send
+                    your submission code before the submission window opens.
                   </p>
                 </motion.div>
               ) : (
                 <motion.form
                   onSubmit={handleSubmit}
-                  className="bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8 space-y-8"
-                  key="form"
+                  className='bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8 space-y-8'
+                  key='form'
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
+                  animate={{ opacity: 1 }}>
                   {/* Application type */}
-                  <FieldGroup title="Application Type">
-                    <div className="grid grid-cols-2 gap-3">
+                  <FieldGroup title='Application Type'>
+                    <div className='grid grid-cols-2 gap-3'>
                       {(["individual", "team"] as const).map((type) => (
                         <button
-                          type="button"
+                          type='button'
                           key={type}
                           onClick={() => setField("applicationType", type)}
                           className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
                             form.applicationType === type
                               ? "border-primary bg-primary/5 text-foreground"
                               : "border-border text-muted-foreground hover:border-primary/30"
-                          }`}
-                        >
+                          }`}>
                           {type === "individual" ? (
-                            <User className="w-5 h-5 shrink-0" />
+                            <User className='w-5 h-5 shrink-0' />
                           ) : (
-                            <Users className="w-5 h-5 shrink-0" />
+                            <Users className='w-5 h-5 shrink-0' />
                           )}
-                          <span className="font-semibold capitalize">{type}</span>
+                          <span className='font-semibold capitalize'>
+                            {type}
+                          </span>
                         </button>
                       ))}
                     </div>
                     {form.applicationType === "team" && (
                       <div>
-                        <Label htmlFor="teamName">Team Name</Label>
+                        <Label htmlFor='teamName'>Team Name</Label>
                         <Input
-                          id="teamName"
-                          placeholder="e.g. Studio Tropics"
+                          id='teamName'
+                          placeholder='e.g. Studio Tropics'
                           value={form.teamName}
                           onChange={(e) => setField("teamName", e.target.value)}
-                          className="mt-1.5"
+                          className='mt-1.5'
                         />
                       </div>
                     )}
                   </FieldGroup>
 
                   {/* Lead applicant */}
-                  <FieldGroup title="Lead Applicant">
-                    <div className="grid sm:grid-cols-2 gap-4">
+                  <FieldGroup title='Lead Applicant'>
+                    <div className='grid sm:grid-cols-2 gap-4'>
                       <div>
-                        <Label htmlFor="leadName">Full Name *</Label>
+                        <Label htmlFor='leadName'>Full Name *</Label>
                         <Input
-                          id="leadName"
+                          id='leadName'
                           required
-                          placeholder="Jane Okonkwo"
+                          placeholder='Jane Okonkwo'
                           value={form.leadName}
                           onChange={(e) => setField("leadName", e.target.value)}
-                          className="mt-1.5"
+                          className='mt-1.5'
                         />
                       </div>
                       <div>
-                        <Label htmlFor="leadEmail">Email Address *</Label>
+                        <Label htmlFor='leadEmail'>Email Address *</Label>
                         <Input
-                          id="leadEmail"
-                          type="email"
+                          id='leadEmail'
+                          type='email'
                           required
-                          placeholder="jane@university.edu"
+                          placeholder='jane@university.edu'
                           value={form.leadEmail}
-                          onChange={(e) => setField("leadEmail", e.target.value)}
-                          className="mt-1.5"
+                          onChange={(e) =>
+                            setField("leadEmail", e.target.value)
+                          }
+                          className='mt-1.5'
                         />
                       </div>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className='grid sm:grid-cols-2 gap-4'>
                       <div>
-                        <Label htmlFor="leadPhone">Phone (WhatsApp preferred)</Label>
+                        <Label htmlFor='leadPhone'>
+                          Phone (WhatsApp preferred)
+                        </Label>
                         <Input
-                          id="leadPhone"
-                          placeholder="+234 800 000 0000"
+                          id='leadPhone'
+                          placeholder='+234 800 000 0000'
                           value={form.leadPhone}
-                          onChange={(e) => setField("leadPhone", e.target.value)}
-                          className="mt-1.5"
+                          onChange={(e) =>
+                            setField("leadPhone", e.target.value)
+                          }
+                          className='mt-1.5'
                         />
                       </div>
                       <div>
-                        <Label htmlFor="country">Country *</Label>
+                        <Label htmlFor='country'>Country *</Label>
                         <Input
-                          id="country"
+                          id='country'
                           required
-                          placeholder="Nigeria"
+                          placeholder='Nigeria'
                           value={form.country}
                           onChange={(e) => setField("country", e.target.value)}
-                          className="mt-1.5"
+                          className='mt-1.5'
                         />
                       </div>
                     </div>
                   </FieldGroup>
 
                   {/* Academic */}
-                  <FieldGroup title="Academic Information">
+                  <FieldGroup title='Academic Information'>
                     <div>
-                      <Label htmlFor="university">University / Institution *</Label>
+                      <Label htmlFor='university'>
+                        University / Institution *
+                      </Label>
                       <Input
-                        id="university"
+                        id='university'
                         required
-                        placeholder="University of Lagos"
+                        placeholder='University of Lagos'
                         value={form.university}
                         onChange={(e) => setField("university", e.target.value)}
-                        className="mt-1.5"
+                        className='mt-1.5'
                       />
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-4">
+                    <div className='grid sm:grid-cols-2 gap-4'>
                       <div>
-                        <Label htmlFor="program">Program *</Label>
+                        <Label htmlFor='program'>Program *</Label>
                         <select
-                          id="program"
+                          id='program'
                           required
                           value={form.program}
                           onChange={(e) => setField("program", e.target.value)}
-                          className="mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] md:text-sm"
-                        >
-                          <option value="B.Arch">B.Arch (Architecture)</option>
-                          <option value="M.Arch">M.Arch (Architecture)</option>
-                          <option value="B.Eng">B.Eng / B.Tech (Engineering)</option>
-                          <option value="Other">Other (specify in brief)</option>
+                          className='mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] md:text-sm'>
+                          <option value='B.Arch'>B.Arch (Architecture)</option>
+                          <option value='M.Arch'>M.Arch (Architecture)</option>
+                          <option value='B.Eng'>
+                            B.Eng / B.Tech (Engineering)
+                          </option>
+                          <option value='Other'>
+                            Other (specify in brief)
+                          </option>
                         </select>
                       </div>
                       <div>
-                        <Label htmlFor="yearOfStudy">Year of Study *</Label>
+                        <Label htmlFor='yearOfStudy'>Year of Study *</Label>
                         <select
-                          id="yearOfStudy"
+                          id='yearOfStudy'
                           required
                           value={form.yearOfStudy}
-                          onChange={(e) => setField("yearOfStudy", e.target.value)}
-                          className="mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] md:text-sm"
-                        >
-                          <option value="">Select year</option>
-                          <option value="3rd Year">3rd Year</option>
-                          <option value="4th Year">4th Year</option>
-                          <option value="5th Year">5th Year</option>
-                          <option value="Graduate Year 1">Graduate (Year 1)</option>
-                          <option value="Graduate Year 2">Graduate (Year 2)</option>
+                          onChange={(e) =>
+                            setField("yearOfStudy", e.target.value)
+                          }
+                          className='mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow] md:text-sm'>
+                          <option value=''>Select year</option>
+                          <option value='3rd Year'>3rd Year</option>
+                          <option value='4th Year'>4th Year</option>
+                          <option value='5th Year'>5th Year</option>
+                          <option value='Graduate Year 1'>
+                            Graduate (Year 1)
+                          </option>
+                          <option value='Graduate Year 2'>
+                            Graduate (Year 2)
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -404,47 +443,64 @@ export default function Apply() {
 
                   {/* Team members */}
                   {form.applicationType === "team" && (
-                    <FieldGroup title={`Additional Team Members (${form.teamMembers.length}/3)`}>
+                    <FieldGroup
+                      title={`Additional Team Members (${form.teamMembers.length}/3)`}>
                       <AnimatePresence>
                         {form.teamMembers.map((member, i) => (
                           <motion.div
                             key={member.id}
-                            className="relative p-4 rounded-xl border border-border bg-muted/30"
+                            className='relative p-4 rounded-xl border border-border bg-muted/30'
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10, height: 0 }}
-                            transition={{ duration: 0.25 }}
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                <GraduationCap className="w-3.5 h-3.5" />
+                            transition={{ duration: 0.25 }}>
+                            <div className='flex items-center justify-between mb-3'>
+                              <span className='text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1'>
+                                <GraduationCap className='w-3.5 h-3.5' />
                                 Member {i + 2}
                               </span>
                               <button
-                                type="button"
+                                type='button'
                                 onClick={() => removeTeamMember(member.id)}
-                                className="text-muted-foreground hover:text-destructive transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
+                                className='text-muted-foreground hover:text-destructive transition-colors'>
+                                <Trash2 className='w-4 h-4' />
                               </button>
                             </div>
-                            <div className="grid sm:grid-cols-2 gap-3">
+                            <div className='grid sm:grid-cols-2 gap-3'>
                               <Input
-                                placeholder="Full Name"
+                                placeholder='Full Name'
                                 value={member.name}
-                                onChange={(e) => updateTeamMember(member.id, "name", e.target.value)}
+                                onChange={(e) =>
+                                  updateTeamMember(
+                                    member.id,
+                                    "name",
+                                    e.target.value,
+                                  )
+                                }
                               />
                               <Input
-                                placeholder="Email"
-                                type="email"
+                                placeholder='Email'
+                                type='email'
                                 value={member.email}
-                                onChange={(e) => updateTeamMember(member.id, "email", e.target.value)}
+                                onChange={(e) =>
+                                  updateTeamMember(
+                                    member.id,
+                                    "email",
+                                    e.target.value,
+                                  )
+                                }
                               />
                               <Input
-                                placeholder="University"
-                                className="sm:col-span-2"
+                                placeholder='University'
+                                className='sm:col-span-2'
                                 value={member.university}
-                                onChange={(e) => updateTeamMember(member.id, "university", e.target.value)}
+                                onChange={(e) =>
+                                  updateTeamMember(
+                                    member.id,
+                                    "university",
+                                    e.target.value,
+                                  )
+                                }
                               />
                             </div>
                           </motion.div>
@@ -453,12 +509,11 @@ export default function Apply() {
 
                       {form.teamMembers.length < 3 && (
                         <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full border-dashed"
-                          onClick={addTeamMember}
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
+                          type='button'
+                          variant='outline'
+                          className='w-full border-dashed'
+                          onClick={addTeamMember}>
+                          <Plus className='w-4 h-4 mr-2' />
                           Add Team Member
                         </Button>
                       )}
@@ -466,68 +521,81 @@ export default function Apply() {
                   )}
 
                   {/* Site & brief */}
-                  <FieldGroup title="Site & Concept">
+                  <FieldGroup title='Site & Concept'>
                     <div>
-                      <Label htmlFor="siteLocation">
-                        <MapPin className="w-3.5 h-3.5" />
+                      <Label htmlFor='siteLocation'>
+                        <MapPin className='w-3.5 h-3.5' />
                         Proposed Site Location *
                       </Label>
                       <Input
-                        id="siteLocation"
+                        id='siteLocation'
                         required
-                        placeholder="e.g. Enugu, Enugu State, Nigeria"
+                        placeholder='e.g. Enugu, Enugu State, Nigeria'
                         value={form.siteLocation}
-                        onChange={(e) => setField("siteLocation", e.target.value)}
-                        className="mt-1.5"
+                        onChange={(e) =>
+                          setField("siteLocation", e.target.value)
+                        }
+                        className='mt-1.5'
                       />
                     </div>
                     <div>
-                      <Label htmlFor="conceptBrief">
+                      <Label htmlFor='conceptBrief'>
                         Initial Concept Brief
-                        <span className="text-muted-foreground font-normal ml-1">(optional, max 100 words)</span>
+                        <span className='text-muted-foreground font-normal ml-1'>
+                          (optional, max 100 words)
+                        </span>
                       </Label>
                       <Textarea
-                        id="conceptBrief"
-                        placeholder="Briefly describe your initial design direction or the cultural tradition you intend to explore..."
+                        id='conceptBrief'
+                        placeholder='Briefly describe your initial design direction or the cultural tradition you intend to explore...'
                         value={form.conceptBrief}
-                        onChange={(e) => setField("conceptBrief", e.target.value)}
-                        className="mt-1.5 min-h-[90px]"
+                        onChange={(e) =>
+                          setField("conceptBrief", e.target.value)
+                        }
+                        className='mt-1.5 min-h-[90px]'
                         maxLength={600}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="heardFrom">How did you hear about this competition?</Label>
+                      <Label htmlFor='heardFrom'>
+                        How did you hear about this competition?
+                      </Label>
                       <Input
-                        id="heardFrom"
-                        placeholder="e.g. University notice board, social media, professor..."
+                        id='heardFrom'
+                        placeholder='e.g. University notice board, social media, professor...'
                         value={form.heardFrom}
                         onChange={(e) => setField("heardFrom", e.target.value)}
-                        className="mt-1.5"
+                        className='mt-1.5'
                       />
                     </div>
                   </FieldGroup>
 
                   {/* Declarations */}
-                  <FieldGroup title="Declarations">
+                  <FieldGroup title='Declarations'>
                     {[
                       {
                         key: "agreeEligibility" as const,
-                        label: "I confirm that all team members are currently enrolled in an eligible program (B.Arch 3rd year+ or M.Arch).",
+                        label:
+                          "I confirm that all team members are currently enrolled in an eligible program (B.Arch 3rd year+ or M.Arch).",
                       },
                       {
                         key: "agreeRequirements" as const,
-                        label: "I understand the submission requirements and that work must be original and student-driven.",
+                        label:
+                          "I understand the submission requirements and that work must be original and student-driven.",
                       },
                       {
                         key: "agreeTerms" as const,
-                        label: "I agree to the competition terms & conditions, including that the jury's decision is final and IP remains with authors.",
+                        label:
+                          "I agree to the competition terms & conditions, including that the jury's decision is final and IP remains with authors.",
                       },
                     ].map(({ key, label }) => (
-                      <label key={key} className="flex items-start gap-3 cursor-pointer group">
-                        <div className="relative mt-0.5">
+                      <label
+                        key={key}
+                        className='flex items-start gap-3 cursor-pointer group'>
+                        <div className='relative mt-0.5'>
                           <input
-                            type="checkbox"
-                            className="sr-only"
+                            type='checkbox'
+                            className='sr-only'
                             checked={form[key] as boolean}
                             onChange={(e) => setField(key, e.target.checked)}
                           />
@@ -537,12 +605,15 @@ export default function Apply() {
                                 ? "border-primary bg-primary"
                                 : "border-border group-hover:border-primary/50"
                             }`}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            {form[key] && <CheckCircle2 className="w-3 h-3 text-primary-foreground" />}
+                            whileTap={{ scale: 0.9 }}>
+                            {form[key] && (
+                              <CheckCircle2 className='w-3 h-3 text-primary-foreground' />
+                            )}
                           </motion.div>
                         </div>
-                        <span className="text-sm text-muted-foreground leading-relaxed">{label}</span>
+                        <span className='text-sm text-muted-foreground leading-relaxed'>
+                          {label}
+                        </span>
                       </label>
                     ))}
                   </FieldGroup>
@@ -551,45 +622,50 @@ export default function Apply() {
                   <AnimatePresence>
                     {(status === "error" || errorMsg) && (
                       <motion.div
-                        className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive"
+                        className='flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive'
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                        exit={{ opacity: 0 }}>
+                        <AlertCircle className='w-4 h-4 shrink-0 mt-0.5' />
                         {errorMsg || "Something went wrong. Please try again."}
                       </motion.div>
                     )}
                   </AnimatePresence>
 
+                  <HCaptcha
+                    sitekey={process.env.NEXT_PUBLIC_WEB3FORMS_SITE_KEY!}
+                    reCaptchaCompat={false}
+                    onVerify={onHCaptchaChange}
+                    onExpire={() => setCaptchaToken("")}
+                    ref={captchaRef}
+                  />
+
                   {/* Submit */}
                   <Button
-                    type="submit"
-                    size="lg"
-                    className="w-full h-12 text-base font-bold"
-                    disabled={status === "loading"}
-                  >
+                    type='submit'
+                    size='lg'
+                    className='w-full h-12 text-base font-bold'
+                    disabled={status === "loading"}>
                     {status === "loading" ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className='w-4 h-4 mr-2 animate-spin' />
                         Submitting Application...
                       </>
                     ) : (
                       <>
-                        <Send className="w-4 h-4 mr-2" />
+                        <Send className='w-4 h-4 mr-2' />
                         Submit Application
                       </>
                     )}
                   </Button>
 
-                  <p className="text-xs text-center text-muted-foreground">
+                  <p className='text-xs text-center text-muted-foreground'>
                     Registration to the competition website:{" "}
                     <a
-                      href="https://gouni.edu.ng/tropicalfutures2026/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline underline-offset-2"
-                    >
+                      href='https://gouni.edu.ng/tropicalfutures2026/'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-primary underline underline-offset-2'>
                       gouni.edu.ng/tropicalfutures2026
                     </a>
                   </p>

@@ -161,34 +161,31 @@ export default function Submit() {
 
       // Step 3: Notify via Web3Forms from the browser (free tier requires client-side calls)
       const w3fKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
-      if (w3fKey) {
+      if (!w3fKey) {
+        console.warn("[Web3Forms] NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY is not set — notification skipped.");
+      } else {
         const timestamp =
           new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
         const fileSizeMB = `${(form.pdfFile.size / (1024 * 1024)).toFixed(2)} MB`;
-        fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            access_key: w3fKey,
-            subject: `[TF2026 SUBMISSION] ${form.teamName} — "${form.projectTitle}" (${confirmationId})`,
-            from_name: "Tropical Futures 2026",
-            replyto: form.leadEmail,
-            "Confirmation ID": confirmationId,
-            "Received": timestamp,
-            "Submission Code": form.code,
-            "Team / Applicant": form.teamName,
-            "Project Title": form.projectTitle,
-            "Application Ref": form.applicationRef,
-            "Lead Email": form.leadEmail,
-            "Site Location": form.siteLocation,
-            "File Name": form.pdfFile.name,
-            "File Size": fileSizeMB,
-            "PDF Download Link": pdfUrl,
-            "AI Disclosure": form.aiDisclosure
-              ? "Yes — disclosed in submission"
-              : "No AI content declared",
-          }),
-        }).catch((err) => console.warn("[Web3Forms]", err));
+        const fd = new FormData();
+        fd.append("access_key", w3fKey);
+        fd.append("subject", `[TF2026 SUBMISSION] ${form.teamName} — "${form.projectTitle}" (${confirmationId})`);
+        fd.append("from_name", "Tropical Futures 2026");
+        fd.append("replyto", form.leadEmail);
+        fd.append("Confirmation ID", confirmationId);
+        fd.append("Received", timestamp);
+        fd.append("Submission Code", form.code);
+        fd.append("Team / Applicant", form.teamName);
+        fd.append("Project Title", form.projectTitle);
+        fd.append("Application Ref", form.applicationRef);
+        fd.append("Lead Email", form.leadEmail);
+        fd.append("Site Location", form.siteLocation);
+        fd.append("File Name", form.pdfFile.name);
+        fd.append("File Size", fileSizeMB);
+        fd.append("PDF Download Link", pdfUrl);
+        fd.append("AI Disclosure", form.aiDisclosure ? "Yes — disclosed in submission" : "No AI content declared");
+        fetch("https://api.web3forms.com/submit", { method: "POST", body: fd })
+          .catch((err) => console.warn("[Web3Forms]", err));
       }
 
       setSubmitStatus("success");

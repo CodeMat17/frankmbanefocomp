@@ -134,7 +134,9 @@ export default function Apply() {
 
       // Notify via Web3Forms from the browser (free tier requires client-side calls)
       const w3fKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
-      if (w3fKey) {
+      if (!w3fKey) {
+        console.warn("[Web3Forms] NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY is not set — notification skipped.");
+      } else {
         const teamMembersList =
           form.teamMembers.length > 0
             ? form.teamMembers
@@ -143,31 +145,28 @@ export default function Apply() {
             : "Individual application";
         const timestamp =
           new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
-        fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            access_key: w3fKey,
-            subject: `[TF2026] New Application — ${form.leadName} (${referenceId})`,
-            from_name: "Tropical Futures 2026",
-            replyto: form.leadEmail,
-            "Reference ID": referenceId,
-            "Received": timestamp,
-            "Application Type": form.applicationType,
-            "Lead Name": form.leadName,
-            "Lead Email": form.leadEmail,
-            "Phone": form.leadPhone || "—",
-            "University": form.university,
-            "Country": form.country,
-            "Program": form.program,
-            "Year of Study": form.yearOfStudy,
-            "Team Name": form.teamName || "—",
-            "Team Members": teamMembersList,
-            "Site Location": form.siteLocation,
-            "Concept Brief": form.conceptBrief || "—",
-            "Heard From": form.heardFrom || "—",
-          }),
-        }).catch((err) => console.warn("[Web3Forms]", err));
+        const fd = new FormData();
+        fd.append("access_key", w3fKey);
+        fd.append("subject", `[TF2026] New Application — ${form.leadName} (${referenceId})`);
+        fd.append("from_name", "Tropical Futures 2026");
+        fd.append("replyto", form.leadEmail);
+        fd.append("Reference ID", referenceId);
+        fd.append("Received", timestamp);
+        fd.append("Application Type", form.applicationType);
+        fd.append("Lead Name", form.leadName);
+        fd.append("Lead Email", form.leadEmail);
+        fd.append("Phone", form.leadPhone || "—");
+        fd.append("University", form.university);
+        fd.append("Country", form.country);
+        fd.append("Program", form.program);
+        fd.append("Year of Study", form.yearOfStudy);
+        fd.append("Team Name", form.teamName || "—");
+        fd.append("Team Members", teamMembersList);
+        fd.append("Site Location", form.siteLocation);
+        fd.append("Concept Brief", form.conceptBrief || "—");
+        fd.append("Heard From", form.heardFrom || "—");
+        fetch("https://api.web3forms.com/submit", { method: "POST", body: fd })
+          .catch((err) => console.warn("[Web3Forms]", err));
       }
 
       setStatus("success");

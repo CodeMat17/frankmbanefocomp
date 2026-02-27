@@ -196,7 +196,7 @@ export default function Submit() {
   };
 
   return (
-    <section id="submit" className="py-24 md:py-32 bg-background">
+    <section id="submit" className="py-24 md:py-32 bg-background overflow-hidden">
       <div className="container-max section-padding">
         <motion.div
           ref={ref}

@@ -118,18 +118,14 @@ export default function Prizes() {
                     <motion.div
                       className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest"
                       style={{ background: prize.color, color: "#fff" }}
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
+                      whileHover={{ scale: 1.05 }}
                     >
                       Grand Prize
                     </motion.div>
                   )}
 
                   <div className="text-center mb-4">
-                    <motion.div
-                      animate={prize.featured ? { rotate: [0, -5, 5, 0] } : {}}
-                      transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-                    >
+                    <motion.div whileHover={prize.featured ? { rotate: [0, -5, 5, 0] } : {}}>
                       <Icon
                         className={`mx-auto mb-2 ${prize.featured ? "w-12 h-12" : "w-9 h-9"}`}
                         style={{ color: prize.color }}
@@ -223,10 +219,10 @@ export default function Prizes() {
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: criterion.color }}
-                    initial={{ width: 0 }}
-                    animate={isInView ? { width: `${criterion.weight}%` } : {}}
+                    className="h-full rounded-full origin-left"
+                    style={{ background: criterion.color, width: `${criterion.weight}%` }}
+                    initial={{ scaleX: 0 }}
+                    animate={isInView ? { scaleX: 1 } : {}}
                     transition={{ duration: 0.8, delay: 1.1 + i * 0.1, ease: "easeOut" }}
                   />
                 </div>

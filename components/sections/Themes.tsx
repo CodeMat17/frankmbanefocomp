@@ -67,7 +67,7 @@ export default function Themes() {
   const isInView = useInView(ref, { once: true, amount: 0.1 });
 
   return (
-    <section id="themes" className="py-24 md:py-32 bg-muted/40">
+    <section id="themes" className="py-24 md:py-32 bg-muted/40 overflow-hidden">
       <div className="container-max section-padding">
         {/* Header */}
         <motion.div

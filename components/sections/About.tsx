@@ -90,7 +90,7 @@ export default function About() {
             </motion.p>
 
             {/* Key attributes */}
-            <motion.div className="grid grid-cols-2 gap-4 pt-4" variants={stagger}>
+            <motion.div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4" variants={stagger}>
               {[
                 { label: "Zero Carbon", desc: "Net Zero Embodied & Operational" },
                 { label: "Site-Specific", desc: "Real Nigerian site, real context" },

@@ -19,7 +19,7 @@ const navLinks = [
 export default function Navbar() {
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { scrollY } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 60);
@@ -47,8 +47,7 @@ export default function Navbar() {
         {/* Scroll progress bar */}
         <motion.div
           className="absolute bottom-0 left-0 h-[2px] bg-primary origin-left"
-          style={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
+          style={{ scaleX: scrollYProgress }}
         />
 
         <div className="container-max section-padding">

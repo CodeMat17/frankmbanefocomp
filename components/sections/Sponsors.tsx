@@ -27,7 +27,7 @@ export default function Sponsors() {
   const isInView = useInView(ref, { once: true, amount: 0.2 });
 
   return (
-    <section className="py-20 md:py-28 bg-muted/40">
+    <section className="py-20 md:py-28 bg-muted/40 overflow-hidden">
       <div className="container-max section-padding" ref={ref}>
         <motion.div
           className="text-center mb-12"

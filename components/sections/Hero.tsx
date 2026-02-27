@@ -6,12 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, MapPin, Calendar, Trophy, Users } from "lucide-react";
 
 const floatingShapes = [
-  { size: 320, left: "3%", top: "8%", delay: 0, duration: 8 },
-  { size: 180, left: "88%", top: "5%", delay: 1.5, duration: 10 },
-  { size: 240, left: "75%", top: "55%", delay: 0.8, duration: 9 },
-  { size: 160, left: "15%", top: "72%", delay: 2.2, duration: 7 },
-  { size: 200, left: "50%", top: "80%", delay: 1, duration: 11 },
-  { size: 120, left: "35%", top: "15%", delay: 3, duration: 8 },
+  { size: 320, left: "3%", top: "8%", delay: 0, duration: 9 },
+  { size: 240, left: "75%", top: "55%", delay: 1.5, duration: 11 },
+  { size: 120, left: "35%", top: "15%", delay: 3, duration: 10 },
 ];
 
 const stats = [
@@ -66,11 +63,7 @@ export default function Hero() {
               background: `radial-gradient(circle, oklch(0.95 0.01 86 / 0.08) 0%, transparent 70%)`,
               border: "1px solid oklch(0.95 0.01 86 / 0.1)",
             }}
-            animate={{
-              y: [0, -25, 0],
-              x: [0, 12, 0],
-              scale: [1, 1.08, 1],
-            }}
+            animate={{ y: [0, -20, 0] }}
             transition={{
               duration: shape.duration,
               repeat: Infinity,
@@ -98,7 +91,7 @@ export default function Hero() {
         <div className="container-max w-full">
           {/* Competition badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-xs font-semibold uppercase tracking-widest mb-8"
+            className="inline-flex flex-wrap justify-center items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-xs font-semibold uppercase tracking-widest mb-8 max-w-full text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}

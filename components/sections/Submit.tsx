@@ -135,7 +135,7 @@ export default function Submit() {
 
       setSubmitStatus("sending");
 
-      // Step 2: Notify via API
+      // Step 2: Validate server-side (code re-verification + generate confirmation ID)
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,7 +155,42 @@ export default function Submit() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Submission failed.");
-      setConfirmationId(data.confirmationId || "TF2026-XXXXXXXX");
+
+      const confirmationId = data.confirmationId || "TF2026-XXXXXXXX";
+      setConfirmationId(confirmationId);
+
+      // Step 3: Notify via Web3Forms from the browser (free tier requires client-side calls)
+      const w3fKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+      if (w3fKey) {
+        const timestamp =
+          new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
+        const fileSizeMB = `${(form.pdfFile.size / (1024 * 1024)).toFixed(2)} MB`;
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: w3fKey,
+            subject: `[TF2026 SUBMISSION] ${form.teamName} — "${form.projectTitle}" (${confirmationId})`,
+            from_name: "Tropical Futures 2026",
+            replyto: form.leadEmail,
+            "Confirmation ID": confirmationId,
+            "Received": timestamp,
+            "Submission Code": form.code,
+            "Team / Applicant": form.teamName,
+            "Project Title": form.projectTitle,
+            "Application Ref": form.applicationRef,
+            "Lead Email": form.leadEmail,
+            "Site Location": form.siteLocation,
+            "File Name": form.pdfFile.name,
+            "File Size": fileSizeMB,
+            "PDF Download Link": pdfUrl,
+            "AI Disclosure": form.aiDisclosure
+              ? "Yes — disclosed in submission"
+              : "No AI content declared",
+          }),
+        }).catch((err) => console.warn("[Web3Forms]", err));
+      }
+
       setSubmitStatus("success");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Submission failed. Please try again.");

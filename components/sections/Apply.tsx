@@ -128,7 +128,48 @@ export default function Apply() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Submission failed.");
-      setRefId(data.referenceId || "FM2026-XXXX");
+
+      const referenceId = data.referenceId || "FM2026-XXXX";
+      setRefId(referenceId);
+
+      // Notify via Web3Forms from the browser (free tier requires client-side calls)
+      const w3fKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+      if (w3fKey) {
+        const teamMembersList =
+          form.teamMembers.length > 0
+            ? form.teamMembers
+                .map((m) => `${m.name} <${m.email}> — ${m.university}`)
+                .join(" | ")
+            : "Individual application";
+        const timestamp =
+          new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: w3fKey,
+            subject: `[TF2026] New Application — ${form.leadName} (${referenceId})`,
+            from_name: "Tropical Futures 2026",
+            replyto: form.leadEmail,
+            "Reference ID": referenceId,
+            "Received": timestamp,
+            "Application Type": form.applicationType,
+            "Lead Name": form.leadName,
+            "Lead Email": form.leadEmail,
+            "Phone": form.leadPhone || "—",
+            "University": form.university,
+            "Country": form.country,
+            "Program": form.program,
+            "Year of Study": form.yearOfStudy,
+            "Team Name": form.teamName || "—",
+            "Team Members": teamMembersList,
+            "Site Location": form.siteLocation,
+            "Concept Brief": form.conceptBrief || "—",
+            "Heard From": form.heardFrom || "—",
+          }),
+        }).catch((err) => console.warn("[Web3Forms]", err));
+      }
+
       setStatus("success");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");

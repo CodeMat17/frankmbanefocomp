@@ -270,7 +270,7 @@ export default function Apply() {
           <motion.div className='lg:col-span-3' variants={fadeUp}>
             <motion.form
               onSubmit={handleSubmit}
-              className='bg-card rounded-2xl border border-border shadow-sm p-6 sm:p-8 space-y-8'
+              className='bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-6 lg:p-8 space-y-8'
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}>
               {/* Application type */}
@@ -281,15 +281,15 @@ export default function Apply() {
                       type='button'
                       key={type}
                       onClick={() => setField("applicationType", type)}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                      className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all text-left text-sm ${
                         form.applicationType === type
                           ? "border-primary bg-primary/5 text-foreground"
                           : "border-border text-muted-foreground hover:border-primary/30"
                       }`}>
                       {type === "individual" ? (
-                        <User className='w-5 h-5 shrink-0' />
+                        <User className='w-4 h-4 shrink-0' />
                       ) : (
-                        <Users className='w-5 h-5 shrink-0' />
+                        <Users className='w-4 h-4 shrink-0' />
                       )}
                       <span className='font-semibold capitalize'>{type}</span>
                     </button>
@@ -412,12 +412,8 @@ export default function Apply() {
                         <SelectValue placeholder='Select year' />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value='1st Year'>
-                          1st Year
-                        </SelectItem>
-                        <SelectItem value='2nd Year'>
-                          2nd Year
-                        </SelectItem>
+                        <SelectItem value='1st Year'>1st Year</SelectItem>
+                        <SelectItem value='2nd Year'>2nd Year</SelectItem>
                         <SelectItem value='3rd Year'>3rd Year</SelectItem>
                         <SelectItem value='4th Year'>4th Year</SelectItem>
                         <SelectItem value='5th Year'>5th Year</SelectItem>
@@ -614,13 +610,15 @@ export default function Apply() {
                 )}
               </AnimatePresence>
 
-              <HCaptcha
-                sitekey={process.env.NEXT_PUBLIC_WEB3FORMS_SITE_KEY!}
-                reCaptchaCompat={false}
-                onVerify={onHCaptchaChange}
-                onExpire={() => setCaptchaToken("")}
-                ref={captchaRef}
-              />
+              <div className="max-sm:[zoom:0.82]">
+                <HCaptcha
+                  sitekey={process.env.NEXT_PUBLIC_WEB3FORMS_SITE_KEY!}
+                  reCaptchaCompat={false}
+                  onVerify={onHCaptchaChange}
+                  onExpire={() => setCaptchaToken("")}
+                  ref={captchaRef}
+                />
+              </div>
 
               {/* Submit */}
               <Button
@@ -682,7 +680,9 @@ export default function Apply() {
               {refId}
             </p>
             <p className='text-sm text-muted-foreground mt-4'>
-              Save this ID. The organizing team will review your eligibility and if you make it, your unique reference ID will be needed to submit your work when the submission window opens.
+              Save this ID. The organizing team will review your eligibility and
+              if you make it, your unique reference ID will be needed to submit
+              your work when the submission window opens.
             </p>
           </div>
 

@@ -6,17 +6,6 @@ import { Trophy, Medal, Award, Star, Heart } from "lucide-react";
 
 const topPrizes = [
   {
-    place: 2,
-    label: "Second Prize",
-    amount: "₦2,000,000",
-    icon: Medal,
-    color: "oklch(0.79 0.01 285)",
-    textColor: "oklch(0.40 0.02 285)",
-    bg: "oklch(0.79 0.01 285 / 0.12)",
-    border: "oklch(0.79 0.01 285 / 0.40)",
-    extras: ["Certificate", "Publication in NIA Journal"],
-  },
-  {
     place: 1,
     label: "First Prize",
     amount: "₦5,000,000",
@@ -27,6 +16,17 @@ const topPrizes = [
     border: "oklch(0.80 0.17 85 / 0.50)",
     extras: ["Trophy", "NIA Journal Publication", "Symposium Invitation"],
     featured: true,
+  },
+  {
+    place: 2,
+    label: "Second Prize",
+    amount: "₦2,000,000",
+    icon: Medal,
+    color: "oklch(0.79 0.01 285)",
+    textColor: "oklch(0.40 0.02 285)",
+    bg: "oklch(0.79 0.01 285 / 0.12)",
+    border: "oklch(0.79 0.01 285 / 0.40)",
+    extras: ["Certificate", "Publication in NIA Journal"],
   },
   {
     place: 3,
@@ -44,7 +44,7 @@ const topPrizes = [
 const otherPrizes = [
   {
     label: "Honorable Mentions",
-    amount: "₦500,000 each",
+    amount: "₦250,000 each",
     count: "Up to 4",
     icon: Star,
     desc: "Certificate + Digital Publication",
@@ -86,7 +86,7 @@ export default function Prizes() {
             Prizes & Awards
           </h2>
           <p className="text-muted-foreground text-base">
-            Total prize pool of <strong className="text-foreground">₦10,000,000+</strong> awarded
+            Total prize pool of <strong className="text-foreground">₦9,000,000+</strong> awarded
             across all categories, plus publication and exhibition opportunities.
           </p>
         </motion.div>

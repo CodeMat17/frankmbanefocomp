@@ -89,7 +89,7 @@ export default function Footer() {
             </ul>
             <div className="mt-4 pt-4 border-t border-primary-foreground/10 space-y-2">
               <a
-                href="https://gouni.edu.ng/tropicalfutures2026/"
+                href="https://gouni.edu.ng"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs text-primary-foreground/60 hover:text-primary-foreground transition-colors"
@@ -111,10 +111,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-primary-foreground/10 pt-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-primary-foreground/50">
+            <p className="text-xs text-primary-foreground/80">
               © 2026 Godfrey Okoye University. All intellectual property rights remain with the authors.
             </p>
-            <p className="text-xs text-primary-foreground/40">
+            <p className="text-xs text-primary-foreground/80">
               The organizers retain the right to exhibit and publish all submitted work with full author credit.
             </p>
           </div>

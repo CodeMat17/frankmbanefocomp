@@ -13,17 +13,9 @@ const events = [
     status: "upcoming",
   },
   {
-    date: "Apr 15, 2026",
-    label: "Early Registration",
-    highlight: "Fee: NGN 10,000",
-    desc: "Register early to save. All registered teams gain access to the Q&A portal.",
-    status: "upcoming",
-  },
-  {
     date: "May 15, 2026",
-    label: "Standard Registration",
-    highlight: "Fee: NGN 25,000",
-    desc: "Final deadline for new registrations.",
+    label: "Registration Deadline",
+    desc: "Final deadline for new registrations. Entry is free — open to all GOU students and graduates.",
     status: "upcoming",
   },
   {
@@ -47,16 +39,11 @@ const events = [
     status: "future",
   },
   {
-    date: "Dec 15, 2026",
-    label: "Winners Announced",
-    desc: "Results published on the competition website and sent to all participants.",
+    date: "Convocation 2027",
+    label: "Winners Announcement, Exhibition & Symposium",
+    desc: "Winners announced, shortlisted work exhibited, and symposium held — all in one day during the Godfrey Okoye University convocation ceremony.",
     status: "future",
-  },
-  {
-    date: "Feb / Mar 2027",
-    label: "Exhibition & Symposium",
-    desc: "Winners present at a symposium. All shortlisted work exhibited and published.",
-    status: "future",
+    important: true,
   },
 ];
 
@@ -161,7 +148,7 @@ export default function Timeline() {
           </div>
         </div>
 
-        {/* Registration note */}
+        {/* Free entry note */}
         <motion.div
           className="mt-12 text-center p-6 rounded-2xl border border-primary/20 bg-primary/5 max-w-xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
@@ -169,10 +156,10 @@ export default function Timeline() {
           transition={{ delay: 1.2 }}
         >
           <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
-          <p className="text-sm font-bold text-foreground mb-1">Early Bird Advantage</p>
+          <p className="text-sm font-bold text-foreground mb-1">Free to Enter</p>
           <p className="text-sm text-muted-foreground">
-            Register by <strong className="text-foreground">April 15</strong> to save NGN 15,000 and gain
-            early access to the FAQ portal.
+            There is no registration fee. Register by{" "}
+            <strong className="text-foreground">May 15</strong> to gain access to the Q&A portal before the submission window opens.
           </p>
         </motion.div>
       </div>

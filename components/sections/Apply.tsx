@@ -227,33 +227,15 @@ export default function Apply() {
               </p>
             </div>
 
-            {/* Registration fees */}
-            <div className='space-y-3'>
-              <p className='text-sm font-bold text-foreground'>
-                Registration Fees
+            {/* Free entry */}
+            <div className='p-4 rounded-xl border border-primary/20 bg-primary/5'>
+              <p className='text-sm font-bold text-foreground mb-1'>
+                Free Entry
               </p>
-              <div className='p-4 rounded-xl border border-border bg-card'>
-                <div className='flex justify-between items-center mb-2'>
-                  <span className='text-sm font-semibold text-foreground'>
-                    Early Bird
-                  </span>
-                  <span className='font-black text-primary'>₦10,000</span>
-                </div>
-                <div className='text-xs text-muted-foreground'>
-                  Until April 15, 2026
-                </div>
-              </div>
-              <div className='p-4 rounded-xl border border-border bg-card'>
-                <div className='flex justify-between items-center mb-2'>
-                  <span className='text-sm font-semibold text-foreground'>
-                    Standard
-                  </span>
-                  <span className='font-black text-foreground'>₦25,000</span>
-                </div>
-                <div className='text-xs text-muted-foreground'>
-                  April 16 – May 15, 2026
-                </div>
-              </div>
+              <p className='text-sm text-muted-foreground'>
+                There is no registration fee. This competition is open to all
+                current students and graduates of Godfrey Okoye University.
+              </p>
             </div>
 
             <div className='p-4 rounded-xl bg-primary/5 border border-primary/20 text-sm text-muted-foreground'>
@@ -554,7 +536,7 @@ export default function Apply() {
                   {
                     key: "agreeEligibility" as const,
                     label:
-                      "I confirm that all team members are currently enrolled in an eligible program (B.Arch 3rd year+ or M.Arch).",
+                      "I confirm that all team members are current students or graduates of Godfrey Okoye University.",
                   },
                   {
                     key: "agreeRequirements" as const,
@@ -646,7 +628,7 @@ export default function Apply() {
                   target='_blank'
                   rel='noopener noreferrer'
                   className='text-primary underline underline-offset-2'>
-                  gouni.edu.ng/tropicalfutures2026
+                  frankmbanefocomp.vercel.app
                 </a>
               </p>
             </motion.form>

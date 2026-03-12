@@ -99,14 +99,14 @@ export default function Hero() {
             International Architecture Competition · 2026
           </motion.div>
 
-          {/* Organizer */}
+          {/* Organizer & Sponsor */}
           <motion.p
-            className="text-white/70 text-sm mb-4 font-medium tracking-wide"
+            className="text-white/90 text-sm mb-4 font-semibold tracking-wide"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.35 }}
           >
-            Organized by Godfrey Okoye University, Nigeria
+            Organized by Godfrey Okoye University, Nigeria &nbsp;·&nbsp; Sponsored by OXI-ZEN
           </motion.p>
 
           {/* Competition name */}

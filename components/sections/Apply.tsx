@@ -27,8 +27,6 @@ import {
   Trash2,
   Loader2,
   Send,
-  User,
-  Users,
   GraduationCap,
   MapPin,
   AlertCircle,
@@ -43,7 +41,6 @@ interface TeamMember {
 }
 
 interface FormData {
-  applicationType: "individual" | "team";
   leadName: string;
   leadEmail: string;
   leadPhone: string;
@@ -62,7 +59,6 @@ interface FormData {
 }
 
 const initialForm: FormData = {
-  applicationType: "team",
   leadName: "",
   leadEmail: "",
   leadPhone: "",
@@ -158,7 +154,7 @@ export default function Apply() {
       const teamMembersList =
         form.teamMembers.length > 0
           ? form.teamMembers.map((m) => `${m.name} <${m.email}> — ${m.university}`).join(" | ")
-          : "Individual application";
+          : "Solo applicant";
       const timestamp = new Date().toLocaleString("en-GB", { timeZone: "Africa/Lagos" }) + " WAT";
 
       // Build FormData manually from React state (inputs have no name attrs)
@@ -170,7 +166,6 @@ export default function Apply() {
       fd.append("h-captcha-response", captchaToken);
       fd.append("Reference ID", referenceId);
       fd.append("Received", timestamp);
-      fd.append("Application Type", form.applicationType);
       fd.append("Lead Name", form.leadName);
       fd.append("Lead Email", form.leadEmail);
       fd.append("Phone", form.leadPhone || "—");
@@ -255,42 +250,6 @@ export default function Apply() {
               className='bg-card rounded-2xl border border-border shadow-sm p-4 sm:p-6 lg:p-8 space-y-8'
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}>
-              {/* Application type */}
-              <FieldGroup title='Application Type'>
-                <div className='grid grid-cols-2 gap-3'>
-                  {(["individual", "team"] as const).map((type) => (
-                    <button
-                      type='button'
-                      key={type}
-                      onClick={() => setField("applicationType", type)}
-                      className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border-2 transition-all text-left text-sm ${
-                        form.applicationType === type
-                          ? "border-primary bg-primary/5 text-foreground"
-                          : "border-border text-muted-foreground hover:border-primary/30"
-                      }`}>
-                      {type === "individual" ? (
-                        <User className='w-4 h-4 shrink-0' />
-                      ) : (
-                        <Users className='w-4 h-4 shrink-0' />
-                      )}
-                      <span className='font-semibold capitalize'>{type}</span>
-                    </button>
-                  ))}
-                </div>
-                {form.applicationType === "team" && (
-                  <div>
-                    <Label htmlFor='teamName'>Team Name</Label>
-                    <Input
-                      id='teamName'
-                      placeholder='e.g. Studio Tropics'
-                      value={form.teamName}
-                      onChange={(e) => setField("teamName", e.target.value)}
-                      className='mt-1.5'
-                    />
-                  </div>
-                )}
-              </FieldGroup>
-
               {/* Lead applicant */}
               <FieldGroup title='Lead Applicant'>
                 <div className='grid sm:grid-cols-2 gap-4'>
@@ -399,6 +358,7 @@ export default function Apply() {
                         <SelectItem value='3rd Year'>3rd Year</SelectItem>
                         <SelectItem value='4th Year'>4th Year</SelectItem>
                         <SelectItem value='5th Year'>5th Year</SelectItem>
+                        <SelectItem value='Graduate'>Graduate</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -406,83 +366,83 @@ export default function Apply() {
               </FieldGroup>
 
               {/* Team members */}
-              {form.applicationType === "team" && (
-                <FieldGroup
-                  title={`Additional Team Members (${form.teamMembers.length}/3)`}>
-                  <AnimatePresence>
-                    {form.teamMembers.map((member, i) => (
-                      <motion.div
-                        key={member.id}
-                        className='relative p-4 rounded-xl border border-border bg-muted/30'
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}>
-                        <div className='flex items-center justify-between mb-3'>
-                          <span className='text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1'>
-                            <GraduationCap className='w-3.5 h-3.5' />
-                            Member {i + 2}
-                          </span>
-                          <button
-                            type='button'
-                            onClick={() => removeTeamMember(member.id)}
-                            className='text-muted-foreground hover:text-destructive transition-colors'>
-                            <Trash2 className='w-4 h-4' />
-                          </button>
-                        </div>
-                        <div className='grid sm:grid-cols-2 gap-3'>
-                          <Input
-                            placeholder='Full Name'
-                            value={member.name}
-                            onChange={(e) =>
-                              updateTeamMember(
-                                member.id,
-                                "name",
-                                e.target.value,
-                              )
-                            }
-                          />
-                          <Input
-                            placeholder='Email'
-                            type='email'
-                            value={member.email}
-                            onChange={(e) =>
-                              updateTeamMember(
-                                member.id,
-                                "email",
-                                e.target.value,
-                              )
-                            }
-                          />
-                          <Input
-                            placeholder='University'
-                            className='sm:col-span-2'
-                            value={member.university}
-                            onChange={(e) =>
-                              updateTeamMember(
-                                member.id,
-                                "university",
-                                e.target.value,
-                              )
-                            }
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+              <FieldGroup
+                title={`Team Members (${form.teamMembers.length + 1} / 4)`}>
+                <p className='text-xs text-muted-foreground -mt-2'>
+                  You are Member 1. Optionally add up to 3 more members.
+                </p>
+                <div>
+                  <Label htmlFor='teamName'>Team Name *</Label>
+                  <Input
+                    id='teamName'
+                    required
+                    placeholder='e.g. Studio Tropics'
+                    value={form.teamName}
+                    onChange={(e) => setField("teamName", e.target.value)}
+                    className='mt-1.5'
+                  />
+                </div>
+                <AnimatePresence>
+                  {form.teamMembers.map((member, i) => (
+                    <motion.div
+                      key={member.id}
+                      className='relative p-4 rounded-xl border border-border bg-muted/30'
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.25 }}>
+                      <div className='flex items-center justify-between mb-3'>
+                        <span className='text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-1'>
+                          <GraduationCap className='w-3.5 h-3.5' />
+                          Member {i + 2}
+                        </span>
+                        <button
+                          type='button'
+                          onClick={() => removeTeamMember(member.id)}
+                          className='text-muted-foreground hover:text-destructive transition-colors'>
+                          <Trash2 className='w-4 h-4' />
+                        </button>
+                      </div>
+                      <div className='grid sm:grid-cols-2 gap-3'>
+                        <Input
+                          placeholder='Full Name'
+                          value={member.name}
+                          onChange={(e) =>
+                            updateTeamMember(member.id, "name", e.target.value)
+                          }
+                        />
+                        <Input
+                          placeholder='Email'
+                          type='email'
+                          value={member.email}
+                          onChange={(e) =>
+                            updateTeamMember(member.id, "email", e.target.value)
+                          }
+                        />
+                        <Input
+                          placeholder='Department / Programme'
+                          className='sm:col-span-2'
+                          value={member.university}
+                          onChange={(e) =>
+                            updateTeamMember(member.id, "university", e.target.value)
+                          }
+                        />
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
-                  {form.teamMembers.length < 3 && (
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className='w-full border-dashed'
-                      onClick={addTeamMember}>
-                      <Plus className='w-4 h-4 mr-2' />
-                      Add Team Member
-                    </Button>
-                  )}
-                </FieldGroup>
-              )}
+                {form.teamMembers.length < 3 && (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='w-full border-dashed'
+                    onClick={addTeamMember}>
+                    <Plus className='w-4 h-4 mr-2' />
+                    Add Team Member
+                  </Button>
+                )}
+              </FieldGroup>
 
               {/* Site & brief */}
               <FieldGroup title='Site & Concept'>

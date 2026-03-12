@@ -85,7 +85,7 @@ export default function Eligibility() {
                       ))}
                     </div>
                     <span className='text-xs text-muted-foreground'>
-                      {n === 1 ? "Solo" : `${n} members`}
+                      {n === 1 ? "1 member" : `${n} members`}
                     </span>
                   </motion.div>
                 ))}

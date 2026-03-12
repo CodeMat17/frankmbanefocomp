@@ -13,8 +13,7 @@ const floatingShapes = [
 
 const stats = [
   { icon: Trophy, label: "First Prize", value: "₦5M" },
-  { icon: Calendar, label: "Deadline", value: "Jul 31" },
-  { icon: MapPin, label: "Site", value: "Nigeria" },
+
   { icon: Users, label: "Team Size", value: "Up to 4" },
 ];
 
@@ -176,7 +175,7 @@ export default function Hero() {
               className="bg-white text-green-600 hover:bg-white/90 font-bold px-8 h-12 text-base shadow-xl hover:shadow-2xl transition-all hover:scale-105 rounded-full"
               onClick={() => handleScroll("#apply")}
             >
-              Apply Now — Free Until Apr 15
+              Apply Now
             </Button>
             <Button
               size="lg"
@@ -198,7 +197,7 @@ export default function Hero() {
         transition={{ delay: 1.3, duration: 0.6 }}
       >
         <div className="container-max section-padding">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-white/10">
+          <div className="grid grid-cols-2 gap-0 divide-x divide-white/10">
             {stats.map((stat, i) => (
               <motion.div
                 key={stat.label}

@@ -230,7 +230,7 @@ export default function Prizes() {
             ))}
           </div>
           <p className="text-center text-xs text-muted-foreground mt-6">
-            Judged by a renowned international jury of architects, engineers, material scientists, and cultural theorists.
+            Judged by renowned international jury of architects, engineers, material scientists, and cultural theorists.
           </p>
         </motion.div>
       </div>

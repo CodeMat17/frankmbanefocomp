@@ -64,12 +64,10 @@ export default function Navbar() {
                 <Leaf className="w-4 h-4 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <div className="text-sm font-bold leading-none text-white dark:text-white/70">
+                <div className="font-bold leading-none text-amber-500 dark:text-white">
                   TROPICAL FUTURES
                 </div>
-                <div className="text-xs text-white/500 leading-none mt-0.5">
-                  2026
-                </div>
+             
               </div>
             </motion.a>
 
@@ -80,7 +78,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
-                  className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium hover:text-foreground rounded-md hover:bg-accent transition-colors"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.05 }}

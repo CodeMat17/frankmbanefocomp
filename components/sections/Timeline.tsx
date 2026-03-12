@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const events = [
   {
-    date: "Mar 1, 2026",
+    date: "Mar 20, 2026",
     label: "Competition Launch",
     desc: "Official launch of Tropical Futures 2026. Brief and registration portal go live.",
     status: "upcoming",
@@ -158,7 +158,7 @@ export default function Timeline() {
           <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
           <p className="text-sm font-bold text-foreground mb-1">Free to Enter</p>
           <p className="text-sm text-muted-foreground">
-            There is no registration fee. Register by{" "}
+            No registration fee. Register by{" "}
             <strong className="text-foreground">May 15</strong> to gain access to the Q&A portal before the submission window opens.
           </p>
         </motion.div>

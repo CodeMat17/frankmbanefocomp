@@ -8,6 +8,7 @@ import Timeline from "@/components/sections/Timeline";
 import Prizes from "@/components/sections/Prizes";
 import Apply from "@/components/sections/Apply";
 import Submit from "@/components/sections/Submit";
+import FAQ from "@/components/sections/FAQ";
 import Sponsors from "@/components/sections/Sponsors";
 import Footer from "@/components/sections/Footer";
 
@@ -25,6 +26,7 @@ export default function Home() {
         <Prizes />
         <Apply />
         {/* <Submit /> */}
+        <FAQ />
         <Sponsors />
       </main>
       <Footer />

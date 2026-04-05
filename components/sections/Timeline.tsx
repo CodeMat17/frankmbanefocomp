@@ -7,39 +7,33 @@ import { cn } from "@/lib/utils";
 
 const events = [
   {
-    date: "Mar 20, 2026",
-    label: "Competition Launch",
-    desc: "Official launch of Tropical Futures 2026. Brief and registration portal go live.",
+    date: "Apr 15, 2026",
+    label: "Registration Opens",
+    desc: "Official launch of Tropical Futures 2026. Brief goes live and the registration portal opens. Entry is free for all GOU students and graduates.",
     status: "upcoming",
   },
   {
     date: "May 15, 2026",
-    label: "Registration Deadline",
-    desc: "Final deadline for new registrations. Entry is free — open to all GOU students and graduates.",
-    status: "upcoming",
-  },
-  {
-    date: "Until Jul 1",
-    label: "Q&A Period",
-    desc: "FAQs updated bi-weekly. Submit clarification questions through the portal.",
+    label: "Registration Closes",
+    desc: "Final deadline for new registrations. Registered teams gain access to the Q&A portal.",
     status: "upcoming",
   },
   {
     date: "Jul 31, 2026",
-    label: "Submission Deadline",
+    label: "Submission Closes",
     highlight: "23:59 WAT",
     desc: "Final PDF submissions due. No extensions will be granted.",
     status: "upcoming",
     important: true,
   },
   {
-    date: "Nov 2026",
-    label: "Jury Deliberation",
-    desc: "International jury reviews all submissions. Scores are tabulated.",
+    date: "Aug 2026",
+    label: "Jury Deliberations",
+    desc: "International jury reviews all submissions and tabulates scores.",
     status: "future",
   },
   {
-    date: "Convocation 2027",
+    date: "Nov / Dec 2026",
     label: "Winners Announcement, Exhibition & Symposium",
     desc: "Winners announced, shortlisted work exhibited, and symposium held — all in one day during the Godfrey Okoye University convocation ceremony.",
     status: "future",
@@ -158,8 +152,9 @@ export default function Timeline() {
           <Clock className="w-6 h-6 text-primary mx-auto mb-2" />
           <p className="text-sm font-bold text-foreground mb-1">Free to Enter</p>
           <p className="text-sm text-muted-foreground">
-            No registration fee. Register by{" "}
-            <strong className="text-foreground">May 15</strong> to gain access to the Q&A portal before the submission window opens.
+            No registration fee. Registration opens{" "}
+            <strong className="text-foreground">April 15</strong> and closes{" "}
+            <strong className="text-foreground">May 15</strong>. Registered participants gain access to the Q&A portal.
           </p>
         </motion.div>
       </div>

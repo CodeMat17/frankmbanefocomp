@@ -14,6 +14,7 @@ const navLinks = [
   { label: "Eligibility", href: "#eligibility" },
   { label: "Schedule", href: "#timeline" },
   { label: "Prizes", href: "#prizes" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 export default function Navbar() {
